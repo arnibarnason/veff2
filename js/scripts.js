@@ -4,15 +4,29 @@ $( document ).ready(function() {
 
     var isDrawing = false;
 
+    var startX = 0;
+    var startY = 0;
+
     $("#imageView").mousedown(function(e) {
-    	var x = e.pageX - this.offsetLeft;
-    	var y = e.pageY - this.offsetTop;
-    	var nextColor = drawing.nextColor;
+    	startX = e.pageX - this.offsetLeft;
+    	startY = e.pageY - this.offsetTop;
+    	//var nextColor = drawing.nextColor;
     	isDrawing = true;
-    	if(drawing.nextObject === "square") {
-    		drawing.shapes.push(new  Rect(x, y, nextColor));
-    	}
+    	// if(drawing.nextObject === "square") {
+    	// 	drawing.shapes.push(new  Rect(x, y, nextColor));
+    	// }
     });
+
+	$("#imageView").mouseup(function(e) {
+		var endX = e.pageX - this.offsetLeft;
+		var endY = e.pageY - this.offsetTop;
+		var nextColor = drawing.nextColor;
+		if(drawing.nextObject === "square") {
+    	 	drawing.shapes.push(new  Rect(startX, startY, endX, endY, nextColor));
+    	}
+    	isDrawing = false;
+	});	
+
 
 	$('#picker').colpick({
 		flat:true,
@@ -35,7 +49,7 @@ $( document ).ready(function() {
 		nextColor: "#000000",
 		drawAll: function drawAll() {
 			for (var i = 0; i < shapes.length; ++i) {
-				shapes[i].draw(/* TODO: there will be some parameters here...*/);
+				shapes[i].draw();
 			}
 		}
 	};
@@ -56,15 +70,15 @@ $( document ).ready(function() {
 	})
 
 	var Rect = Shape.extend( {
-		constructor: function(x, y, color) {
-			this.base(x,y,color);
-			//this.rWidth = rWidth;
-			//this.rHeight = rHeight;
+		constructor: function(startX, startY, endX, endY, color) {
+			this.base(startX, startY ,color);
+			this.rWidth = endX - this.startX;
+			this.rHeight = endY - this.startY;
 			this.draw();	
 		},
 		rWidth: 10,
 		rHeight: 10,
-		draw: function draw() {
+		draw: function draw() {	
 			context.strokeStyle = this.color;
 			context.strokeRect(this.startX, this.startY, this.rWidth, this.rHeight);
 		}
