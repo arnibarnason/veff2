@@ -4,32 +4,38 @@ $( document ).ready(function() {
 
     var isDrawing = false;
 
-    var startX = 0;
-    var startY = 0;
-
     $("#imageView").mousedown(function(e) {
-    	startX = e.pageX - this.offsetLeft;
-    	startY = e.pageY - this.offsetTop;
+    	var startPoint = new Point();
+    	startPoint.x = e.pageX - this.offsetLeft;
+    	startPoint.y = e.pageY - this.offsetTop;
     	var nextColor = drawing.nextColor;
     	isDrawing = true;
     	// hægt að refactora, sjá fyrirlestur 2b
     	if(drawing.nextObject === "square") {
-    		drawing.shapes.push(new  Rect(startX, startY, nextColor));
+    		drawing.shapes.push(new  Rect(startPoint, nextColor));
     	}
     	if(drawing.nextObject === "line") {
-    		drawing.shapes.push(new Line(startX, startY, nextColor));
+    		drawing.shapes.push(new Line(startPoint, nextColor));
+    	}
+    	if(drawing.nextObject === "circle") {
+    		drawing.shapes.push(new Circle(startPoint, nextColor));
     	}
     });
 
     $("#imageView").mousemove(function(e) {
     	if(isDrawing === true) {
     		var obj = drawing.shapes[drawing.shapes.length - 1];
-    		var endX = e.pageX - this.offsetLeft;
-			var endY = e.pageY - this.offsetTop;
-			obj.setEndPoint(endX, endY);
+    		var endPoint = new Point();
+    		endPoint.x = e.pageX - this.offsetLeft;
+			endPoint.y = e.pageY - this.offsetTop;
+			obj.setEndPoint(endPoint);
 			drawing.drawAll();
 			if(drawing.nextObject === "square") {
 				obj.setHeightAndWidth();
+			}
+			if(drawing.nextObject === "circle") {
+				obj.setRadius();
+				obj.setCenterPoint();
 			}
     	}
     });
@@ -83,23 +89,23 @@ $( document ).ready(function() {
 		}
 	};
 
+	function Point() { 
+		this.x = 0;
+		this.y = 0;
+	};
+
 	var Shape = Base.extend( {
-		constructor: function(startX, startY, color) {
-			this.startX = startX;
-			this.startY = startY;
-			this.endX = startX;
-			this.endY = startY;
+		constructor: function(startPoint, color) {
+			this.startPoint = startPoint;
+			this.endPoint = startPoint;
 			this.color = color;
 		},
-		startX: 0,
-		startT: 0,
-		endX: 0,
-		endY: 0,
+		startPoint: 0,
+		endPoint: 0,
 		color: "#000000",
 
-		setEndPoint: function(x, y) {
-			this.endX = x;
-			this.endY = y;
+		setEndPoint: function(endPoint) {
+			this.endPoint = endPoint;
 		}, 
 
 		isAtPoint: function(x,y) {
@@ -108,35 +114,62 @@ $( document ).ready(function() {
 	});
 
 	var Rect = Shape.extend( {
-		constructor: function(startX, startY, color) {
-			this.base(startX, startY ,color);
-			this.rWidth = 1;
-			this.rHeight = 1;
+		constructor: function(startPoint, color) {
+			this.base(startPoint ,color);
+			this.rWidth = 0;
+			this.rHeight = 0;
 			this.draw();	
 		},
-		rWidth: 1,
-		rHeight: 1,
+		rWidth: 0,
+		rHeight: 0,
 		setHeightAndWidth: function setHeightAndWidth() {
-			this.rWidth = this.endX - this.startX;
-			this.rHeight = this.endY - this.startY;
+			this.rWidth = this.endPoint.x - this.startPoint.x;
+			this.rHeight = this.endPoint.y - this.startPoint.y;
 		},
 		draw: function draw() {	
 			context.strokeStyle = this.color;
-			context.strokeRect(this.startX, this.startY, this.rWidth, this.rHeight);
+			context.strokeRect(this.startPoint.x, this.startPoint.y, this.rWidth, this.rHeight);
 		}
 	});
 
 	var Line = Shape.extend( {
-		constructor: function(startX, startY, color) {
-			this.base(startX, startY ,color);
+		constructor: function(startPoint, color) {
+			this.base(startPoint ,color);
 			this.draw();	
 		},
 		draw: function draw() {	
 			context.strokeStyle = this.color;
 			context.beginPath();
-			context.moveTo(this.startX, this.startY);
-			context.lineTo(this.endX, this.endY);
+			context.moveTo(this.startPoint.x, this.startPoint.y);
+			context.lineTo(this.endPoint.x, this.endPoint.y);
 			context.stroke();	
+		}
+	});
+
+	var Circle = Shape.extend( {
+		constructor: function(startPoint, color) {
+			this.base(startPoint, color);
+			this.draw();
+		},
+		radius: 0,
+		centerPoint: 0,
+		setRadius: function setRadius() {
+			this.radius = Math.max(
+				Math.abs(this.endPoint.x - this.startPoint.x),
+				Math.abs(this.endPoint.y - this.startPoint.y)
+				)/2;
+		},
+		setCenterPoint: function setCenterPoint() {
+			var cPoint = new Point();
+			cPoint.x = (this.endPoint.x + this.startPoint.x)/2;
+			cPoint.y = (this.endPoint.y + this.startPoint.y)/2;
+			this.centerPoint = cPoint;
+		},
+		draw: function draw() {
+			context.strokeStyle = this.color;
+			context.beginPath();
+			context.arc(this.centerPoint.x, this.centerPoint.y, this.radius, 0, Math.PI*2, false);
+			context.stroke();
 		}
 	});
 
