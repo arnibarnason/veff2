@@ -20,15 +20,18 @@ $( document ).ready(function() {
     	if(drawing.nextObject === "circle") {
     		drawing.shapes.push(new Circle(startPoint, nextColor));
     	}
+    	if(drawing.nextObject === "pen") {
+    		drawing.shapes.push(new Pencil(startPoint, nextColor));
+    	}
     });
 
     $("#imageView").mousemove(function(e) {
     	if(isDrawing === true) {
     		var obj = drawing.shapes[drawing.shapes.length - 1];
-    		var endPoint = new Point();
-    		endPoint.x = e.pageX - this.offsetLeft;
-			endPoint.y = e.pageY - this.offsetTop;
-			obj.setEndPoint(endPoint);
+    		var currPoint = new Point();
+    		currPoint.x = e.pageX - this.offsetLeft;
+			currPoint.y = e.pageY - this.offsetTop;
+			obj.setEndPoint(currPoint);
 			drawing.drawAll();
 			if(drawing.nextObject === "square") {
 				obj.setHeightAndWidth();
@@ -36,6 +39,9 @@ $( document ).ready(function() {
 			if(drawing.nextObject === "circle") {
 				obj.setRadius();
 				obj.setCenterPoint();
+			}
+			if(drawing.nextObject === "pen") {
+				obj.addToDrawingArr(currPoint);
 			}
     	}
     });
@@ -118,7 +124,6 @@ $( document ).ready(function() {
 			this.base(startPoint ,color);
 			this.rWidth = 0;
 			this.rHeight = 0;
-			this.draw();	
 		},
 		rWidth: 0,
 		rHeight: 0,
@@ -149,7 +154,6 @@ $( document ).ready(function() {
 	var Circle = Shape.extend( {
 		constructor: function(startPoint, color) {
 			this.base(startPoint, color);
-			this.draw();
 		},
 		radius: 0,
 		centerPoint: 0,
@@ -170,6 +174,28 @@ $( document ).ready(function() {
 			context.beginPath();
 			context.arc(this.centerPoint.x, this.centerPoint.y, this.radius, 0, Math.PI*2, false);
 			context.stroke();
+		}
+	});
+
+	var Pencil = Shape.extend( {
+		constructor: function(startPoint, color) {
+			this.base(startPoint, color);
+			this.drawingArr = [startPoint];
+		},
+		drawingArr: [],
+		addToDrawingArr: function addToDrawingArr(point) {
+			this.drawingArr.push(point);
+		},
+		draw: function draw() {
+			context.strokeStyle = this.color;
+			context.beginPath();
+			context.moveTo(this.startPoint.x, this.startPoint.y);
+			for(var i = 0; i < this.drawingArr.length; i++)
+			{
+				context.lineTo(this.drawingArr[i].x,this.drawingArr[i].y);
+			}
+			context.stroke();
+			context.closePath();
 		}
 	});
 
