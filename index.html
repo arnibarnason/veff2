@@ -11,45 +11,96 @@
 </head>
 <body>
 	<header></header>
-	<div id="container">
-		<div id="toolContainer">
-			<div class="btn-group" data-toggle="buttons">		
-	  			<label class="btn btn-default active">
-	  				<input type="radio" name="options" id="pen" value="pen" autocomplete="off"/> pen
-	  			</label>
-	  			<label class="btn btn-default">
-	    			<input type="radio" name="options" id="square" value="square" autocomplete="off"/> square
-	  			</label>
-	  			<label class="btn btn-default">
-	    			<input type="radio" name="options" id="circle" value="circle" autocomplete="off"/> circle
-	  			</label>
-	  			<label class="btn btn-default">
-	  				<input type="radio" name="options" id="line" value="line" autocomplete="off"/> line
-	  			</label>
-	  			<label class="btn btn-default">
-	  				<input type="radio" name="options" id="text" value="text" autocomplete="off"/> text
-	  			</label>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-9" id="canvasParent">
+		  			<canvas id="imageView" width="940px" height="670px">
+						<p>Unfortunately, your browser is currently unsupported by our web application. We are sorry for the inconvenience. Please use one of the supported browsers listed below, or draw the image you want using an offline tool.</p>
+						<p>Supported browsers: <a href="http://www.opera.com">Opera</a>, 
+						<a href="http://www.mozilla.com">Firefox</a>, 
+						<a href="http://www.apple.com/safari">Safari</a>, and 
+						<a href="http://www.konqueror.org">Konqueror</a>.</p>
+					</canvas>
+		  		</div>
+
+				<div class="col-md-3">
+	      			<div class="btn-group" data-toggle="buttons">	
+	      				<label class="btn btn-default active">
+		  					<input type="radio" name="options" id="pen" value="pen" autocomplete="off"/> pen
+		  				</label>
+		  				<label class="btn btn-default">
+		    				<input type="radio" name="options" id="square" value="square" autocomplete="off"/> square
+		  				</label>
+		  				<label class="btn btn-default">
+		    				<input type="radio" name="options" id="circle" value="circle" autocomplete="off"/> circle
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input type="radio" name="options" id="line" value="line" autocomplete="off"/> line
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input type="radio" name="options" id="text" value="text" autocomplete="off"/> text
+		  				</label>
+		  			</div>
+
+					<div class="btn-group" data-toggle="buttons">
+						 <label class="btn btn-default active">
+						 	<input type="radio" name="boldness" id="small" value="1" autocomplete="off"/> small
+						 </label>
+						 <label class="btn btn-default">
+						 	<input type="radio" name="boldness" id="medium" value="8" autocomplete="off"/> medium
+						 </label>
+						 <label class="btn btn-default">
+						 	<input type="radio" name="boldness" id="large" value="16" autocomplete="off"/> large
+						 </label>
+
+					</div>
+
+					<div>
+						<label class="btn btn-default">
+		  					<input id="undo" type="button" class="hide" name="do" id="undo" value="Undo" autocomplete="off"/> Undo
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input id="redo" type="button" class="hide" name="do" id="redo" value="Redo" autocomplete="off"/> Redo
+		  				</label>
+		  			</div>
+
+		  			<div class="btn-group" data-toggle="buttons">
+			            <label class="btn btn dropdown-toggle" data-toggle="dropdown">
+			            <input type="radio" name="options" autocomplete="off"/>Arial
+			            <span class="caret"></span>
+			            </label>
+			            <ul class="dropdown-menu">
+			                  <li><a href="#">Times</a></li>
+			                  <li><a href="#">CNAME</a></li>
+			                  <li><a href="#">MX</a></li>
+			                  <li><a href="#">PTR</a></li>
+			            </ul>
+        				</div>
+						<center>
+		  					<div id="picker"></div>
+		  				</center>
 			</div>
-			<div>
-				<label class="btn btn-default">
-	  				<input id="undo" type="button" class="hide" name="do" id="undo" value="Undo" autocomplete="off"/> Undo
-	  			</label>
-	  			<label class="btn btn-default">
-	  				<input id="redo" type="button" class="hide" name="do" id="redo" value="Redo" autocomplete="off"/> Redo
-	  			</label>
-			</div>
-			<div id="picker" class=""></div>
 		</div>
-		<div id="canvasParent">
-		<canvas id="imageView" width="600" height="500">
-			<p>Unfortunately, your browser is currently unsupported by our web application. We are sorry for the inconvenience. Please use one of the supported browsers listed below, or draw the image you want using an offline tool.</p>
-			<p>Supported browsers: <a href="http://www.opera.com">Opera</a>, 
-			<a href="http://www.mozilla.com">Firefox</a>, 
-			<a href="http://www.apple.com/safari">Safari</a>, and 
-			<a href="http://www.konqueror.org">Konqueror</a>.</p>
-		</canvas></div>
-	</div>
+
+
 </body>
+
+	<script type="text/javascript">
+	
+        
+        $(document).ready(function() {
+        
+            $(".dropdown-menu li a").click(function(){
+  var selText = $(this).text();
+  $(this).parents('.btn-group').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
+});
+        
+        });
+        
+        
+	</script>
+
+
   	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
   	<script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
