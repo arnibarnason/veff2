@@ -9,7 +9,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Draw</title>
 </head>
-<body>
+<body class="totalBody">
 	<header></header>
 		<div class="container-fluid">
 			<div class="row">
@@ -23,8 +23,8 @@
 					</canvas>
 		  		</div>
 
-				<div class="col-md-3">
-	      			<div class="btn-group" data-toggle="buttons">	
+				<div class="col-md-1">
+	      			<div class="btn-group-vertical" data-toggle="buttons">	
 	      				<label class="btn btn-default active">
 		  					<input type="radio" name="options" id="pen" value="pen" autocomplete="off"/> pen
 		  				</label>
@@ -43,10 +43,13 @@
 		   				<label class="btn btn-default">
 		  					<input type="radio" name="options" id="move" value="selector" autocomplete="off"/> move
 		  				</label>
+
+
 		  			</div>
 
-					<div class="btn-group" data-toggle="buttons">
-						 <label class="btn btn-default active">
+
+					<div class="btn-group-vertical" data-toggle="buttons" style="bottom: -15px">
+						<label class="btn btn-default active">
 						 	<input type="radio" name="boldness" id="small" value="1" autocomplete="off"/> small
 						 </label>
 						 <label class="btn btn-default">
@@ -55,53 +58,56 @@
 						 <label class="btn btn-default">
 						 	<input type="radio" name="boldness" id="large" value="16" autocomplete="off"/> large
 						 </label>
+					</div>		  			
 
-					</div>
-
-					<div>
+		  			<div class="btn-group-vertical" style="bottom: -20px">
 						<label class="btn btn-default">
 		  					<input id="undo" type="button" class="hide" name="do" id="undo" value="Undo" autocomplete="off"/> Undo
 		  				</label>
 		  				<label class="btn btn-default">
 		  					<input id="redo" type="button" class="hide" name="do" id="redo" value="Redo" autocomplete="off"/> Redo
 		  				</label>
-		  			</div>
+		  			</div>	
+				</div>
 
-		  			<div class="btn-group" data-toggle="buttons">
-			            <label class="btn btn dropdown-toggle" data-toggle="dropdown">
-			            <input type="radio" name="options" autocomplete="off"/>Arial
-			            <span class="caret"></span>
-			            </label>
-			            <ul class="dropdown-menu">
-			                  <li><a href="#">Times</a></li>
-			                  <li><a href="#">CNAME</a></li>
-			                  <li><a href="#">MX</a></li>
-			                  <li><a href="#">PTR</a></li>
-			            </ul>
-        				</div>
-						<center>
-		  					<div id="picker"></div>
-		  				</center>
+				<div class="col-md-2" style="left: -10px">
+					<center>
+						<div id="picker"></div>
+					<div class="btn-group-vertical" data-toggle="buttons">
+						<div><h3>Fonts for text<h3></div>
+			            <label class="btn btn-default active">
+		  					<input type="radio" name="font" value="Arial" autocomplete="off"/> Arial
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input type="radio" name="font" value="Times New Roman" autocomplete="off"/> Times New Roman
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input type="radio" name="font" value="Calibri" autocomplete="off"/> Calibri
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input type="radio" name="font" value="Verdana" autocomplete="off"/> Verdana
+		  				</label>
+        			</div>
+        			<div class="btn-group" data-toggle="buttons">
+						<div><h3>Font size<h3></div>
+		  				<label class="btn btn-default active">
+		  					<input type="radio" name="fontsize" value="20px " autocomplete="off"/> 20px
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input type="radio" name="fontsize" value="30px " autocomplete="off"/>30px
+		  				</label>
+		  				<label class="btn btn-default">
+		  					<input type="radio" name="fontsize" value="40px " autocomplete="off"/>40px
+		  				</label>
+        			</div>
+        		</div>
+
+				
 			</div>
 		</div>
 
 
 </body>
-
-	<script type="text/javascript">
-	
-        
-        $(document).ready(function() {
-        
-            $(".dropdown-menu li a").click(function(){
-  var selText = $(this).text();
-  $(this).parents('.btn-group').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
-});
-        
-        });
-        
-        
-	</script>
 
 
   	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>

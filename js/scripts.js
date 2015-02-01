@@ -1,6 +1,8 @@
 $( document ).ready(function() {
     var canvas = document.getElementById("imageView");
     var context = canvas.getContext("2d");
+    context.canvas.height = window.innerHeight;
+    context.canvas.width = window.innerWidth * 3/4;
 
     var isDrawing = false;
     var isSelectedTextBox = false;
@@ -109,7 +111,7 @@ $( document ).ready(function() {
 					newTextBox.remove();
 				}
 				else {
-					var obj = new Text(textBoxPoint, drawing.nextColor, text, drawing.nextFont);
+					var obj = new Text(textBoxPoint, drawing.nextColor, text, drawing.nextFont, drawing.nextFontSize);
 		            drawing.shapes.push(obj);
 		           	obj.setEndPoint();
 		            newTextBox.remove();
@@ -138,6 +140,14 @@ $( document ).ready(function() {
 		drawing.nextWidth = parseInt(this.value);
 	});
 
+	$("[name=font]").change( function() {
+		drawing.nextFont = this.value;
+	});
+
+	$("[name=fontsize]").change( function() {
+		drawing.nextFontSize = this.value;
+	});
+
 	$("#undo").click(function() {
 		if(drawing.shapes.length > 0) {
 			var removedObj = drawing.shapes.pop();
@@ -164,7 +174,8 @@ $( document ).ready(function() {
 		nextObject: "pen",
 		nextColor: "#000000",
 		nextWidth: 1,
-		nextFont: "Georgia",
+		nextFont: "Arial",
+		nextFontSize: "20px ",
 		drawAll: function drawAll() {
 			context.clearRect(0, 0, canvas.width, canvas.height);
 			for (var i = 0; i < this.shapes.length; ++i) {
@@ -396,7 +407,7 @@ $( document ).ready(function() {
 	});
 
 	var Text = Base.extend( {
-		constructor: function(startPoint, color, text, font) {
+		constructor: function(startPoint, color, text, font, fontsize) {
 			this.startPoint = startPoint;
 			this.endPoint = startPoint;
 			this.lastChosenPoint = startPoint;
@@ -404,6 +415,7 @@ $( document ).ready(function() {
 			this.string = text;
 			this.inputBox = {};
 			this.font = font;
+			this.fontSize = fontsize;
 			this.widthOfText = 0;
 			this.draw();
 		},
@@ -414,6 +426,7 @@ $( document ).ready(function() {
 		inputBox: {},
 		string: "",
 		font: "",
+		fontSize: "",
 		widthOfText: 0,
 		initLastChosenPoint: function initLastChosenPoint (point) {
 			this.lastChosenPoint = point;
@@ -443,10 +456,10 @@ $( document ).ready(function() {
 		},
 		draw: function draw() {
 			context.strokeStyle = this.color;
-			context.font = "20px " + this.font;
+			context.font = this.fontSize + this.font;
 			context.lineWidth = 1;
 			this.widthOfText = context.measureText(this.string).width;
-			context.strokeText(this.string, this.startPoint.x, this.startPoint.y + 15);
+			context.fillText(this.string, this.startPoint.x, this.startPoint.y + 15);
    		}
 	})
 });
