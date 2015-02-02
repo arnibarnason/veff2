@@ -1,7 +1,7 @@
 $( document ).ready(function() {
     var canvas = document.getElementById("imageView");
     var context = canvas.getContext("2d");
-    context.canvas.height = window.innerHeight;
+    context.canvas.height = $(document).height();
     context.canvas.width = window.innerWidth * 3/4;
 
     var isDrawing = false;
@@ -55,10 +55,6 @@ $( document ).ready(function() {
 					theSelectedObject = i;
 					drawing.shapes[i].initLastChosenPoint(startPoint);
 					break;
-					// context.lineWidth = 0;
-    	// 			context.shadowBlur = 30;
-    	// 			context.shadowColor = "blue";
-    	// 			context.strokeRect(drawing.shapes[i].startPoint.x, drawing.shapes[i].startPoint.y, drawing.shapes[i].rWidth, drawing.shapes[i].rHeight);
 				}
 				else {
 					isSelectedObject = false;
@@ -148,6 +144,12 @@ $( document ).ready(function() {
 		drawing.nextFontSize = this.value;
 	});
 
+	// $("[value=Save]").change( function() {
+	// 	var fileName = $("#fileName").val();
+	// 	var userName = $("#usr").val();
+	// 	drawing.saveImg(fileName, userName);
+	// });
+
 	$("#undo").click(function() {
 		if(drawing.shapes.length > 0) {
 			var removedObj = drawing.shapes.pop();
@@ -164,8 +166,20 @@ $( document ).ready(function() {
 		}
 	});
 
-	$("#save").click(function() {
-		localStorage.setItem(canvas, canvas.toDataURL());
+	$("#saveBtn").click(function() {
+		var fileName = $("#fileName").val();
+		var userName = $("#usr").val();
+		drawing.saveImg(fileName, userName);
+	});
+
+	$("#loadBtn").click(function() {
+		var userName = $("#userName").val();
+		drawing.getImgList(userName);
+	});
+
+	$("#saves").on('click', '.img', function() {
+		var imgId = $(this).val();
+		drawing.showImg(imgId);
 	});
 
 	var drawing = {
@@ -181,24 +195,126 @@ $( document ).ready(function() {
 			for (var i = 0; i < this.shapes.length; ++i) {
 				this.shapes[i].draw();
 			}
+		},
+		saveImg: function saveImg(fileName, userName) {
+			var stringifiedArray = JSON.stringify(this.shapes);
+			var parameters = {
+				"user": userName,
+				"name": fileName,
+				"content": stringifiedArray,
+				"template": false
+			};
+
+			$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8",
+				url: "http://whiteboard.apphb.com/Home/Save",
+				data: parameters,
+				dataType: "jsonp",
+				crossDomain: true,
+				success: function (data) {
+				// The save was successful...
+					alert("success");
+				},
+				error: function (xhr, err) {
+				// Something went wrong...
+					alert("Sorry, I couldn't save.. and I'm also sorry for the alert window");
+				}
+			});
+		},
+		getImgList: function getImgList(userName) {
+			var parameters = {
+				"user": userName,
+				"template": false
+			}
+
+			$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8",
+				url: "http://whiteboard.apphb.com/Home/GetList",
+				data: parameters,
+				dataType: "jsonp",
+				crossDomain: true,
+				success: function (data) {
+				// The load was successful...
+					$("#saves").html('');
+					var savesContent = '';
+				    for(var i=0;i< data.length; i++){
+				       savesContent += '<button type="button" class="btn btn-default img" value="'+data[i].ID+'">'+data[i].WhiteboardTitle+'</button>';
+				    }
+			    	$("#saves").append(savesContent);
+				},
+				error: function (xhr, err) {
+				// Something went wrong...
+					alert("Sorry, I couldn't load.. and I'm also sorry for the alert window");
+				}
+			});
+
+		},
+		showImg: function showImg(imgId) {
+			var parameters = {
+				"ID": imgId
+			}
+
+			$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8",
+				url: "http://whiteboard.apphb.com/Home/GetWhiteboard",
+				data: parameters,
+				dataType: "jsonp",
+				crossDomain: true,
+				success: function (data) {
+				// The save was successful...
+					alert(JSON.stringify(data));
+					var shapeObjects = $.parseJSON(data.WhiteboardContents);
+					for(var i = 0; i < shapeObjects.length; i++) {
+						var obj = shapeObjects[i];
+						if(obj.type === "Rect") {
+							drawing.shapes.push(new Rect(obj.startPoint, obj.color, obj.boldness, obj.endPoint));
+						}
+						else if (obj.type === "Circle") {
+							drawing.shapes.push(new Circle(obj.startPoint, obj.color, obj.boldness, obj.endPoint, obj.centerPoint, obj.radius));
+						}
+						else if (obj.type === "Line") {
+							drawing.shapes.push(new Line(obj.startPoint, obj.color, obj.boldness, obj.endPoint));
+						}
+						else if (obj.type === "Pencil") {
+							drawing.shapes.push(new Pencil(obj.startPoint, obj.color, obj.boldness, obj.drawingArr));
+						}
+						else if (obj.type === "Text") {
+							drawing.shapes.push(new Text(obj.startPoint, obj.color, obj.string, obj.font, obj.fontSize));
+						}
+						else {
+							alert("WHAT ARE YOU!");
+						}
+						drawing.drawAll();
+					}
+				},
+				error: function (xhr, err) {
+				// Something went wrong...
+					alert("Sorry, I couldn't load.. and I'm also sorry for the alert window");
+				}
+			});
 		}
 	};
 
 	function Point() { 
 		this.x = 0;
 		this.y = 0;
-	};
+	}
 
 	var Shape = Base.extend( {
-		constructor: function(startPoint, color, boldness) {
+		constructor: function(startPoint, color, boldness, endPoint) {
 			this.startPoint = startPoint;
-			this.endPoint = startPoint;
+			this.endPoint = (typeof endPoint === 'undefined') ? startPoint : endPoint;
 			this.rWidth = 0;
 			this.rHeight = 0;
 			this.color = color;
 			this.boldness = boldness;
 			this.lastChosenPoint = startPoint;
+			this.setHeightAndWidth();
 		},
+		type: "",
 		startPoint: 0,
 		endPoint: 0,
 		rWidth: 0,
@@ -210,12 +326,10 @@ $( document ).ready(function() {
 		initLastChosenPoint: function initLastChosenPoint (point) {
 			this.lastChosenPoint = point;
 		},
-
 		setHeightAndWidth: function setHeightAndWidth() {
 			this.rWidth = this.endPoint.x - this.startPoint.x;
 			this.rHeight = this.endPoint.y - this.startPoint.y;
 		},
-
 		move: function move(toPoint) {
 			var xDiff = toPoint.x - this.lastChosenPoint.x;
 			var yDiff = toPoint.y - this.lastChosenPoint.y;
@@ -225,22 +339,10 @@ $( document ).ready(function() {
 			this.endPoint.y += yDiff;
 			this.lastChosenPoint = toPoint;
 		},
-
 		setEndPoint: function(endPoint) {
 			this.endPoint = endPoint;
 		}, 
-
-		isAtPoint: function(point) {
-		    // var canvasTemp = document.getElementById("imageView");
-    		// var contextTemp = canvasTemp.getContext("2d");
-    		// this.draw();
-    		// if(contextTemp.isPointInPath(point.x, point.y)){
-    		// 	return true;
-    		// }
-    		// else {
-    		// 	return false;
-    		// }
-    		
+		isAtPoint: function(point) {    		
     		if((this.startPoint.x < point.x && point.x < this.endPoint.x) || (this.startPoint.x > point.x && point.x > this.endPoint.x)) {
 	    		if((this.startPoint.y < point.y && point. y < this.endPoint.y) || (this.startPoint.y > point.y && point.y > this.endPoint.y)) {
 	    			return true;
@@ -251,14 +353,10 @@ $( document ).ready(function() {
 	});
 
 	var Rect = Shape.extend( {
-		constructor: function(startPoint, color, boldness) {
-			this.base(startPoint ,color, boldness);
-			this.rWidth = 0;
-			this.rHeight = 0;
+		constructor: function(startPoint, color, boldness, endPoint) {
+			this.type = "Rect";
+			this.base(startPoint ,color, boldness, endPoint);
 		},
-		rWidth: 0,
-		rHeight: 0,
-
 		draw: function draw() {	
 			context.strokeStyle = this.color;
 			context.lineWidth = this.boldness;
@@ -267,8 +365,9 @@ $( document ).ready(function() {
 	});
 
 	var Line = Shape.extend( {
-		constructor: function(startPoint, color, boldness) {
-			this.base(startPoint, color, boldness);
+		constructor: function(startPoint, color, boldness, endPoint) {
+			this.type = "Line";
+			this.base(startPoint, color, boldness, endPoint);
 			this.draw();	
 		},
 		draw: function draw() {	
@@ -282,11 +381,14 @@ $( document ).ready(function() {
 	});
 
 	var Circle = Shape.extend( {
-		constructor: function(startPoint, color, boldness) {
-			this.base(startPoint, color, boldness);
+		constructor: function(startPoint, color, boldness, endPoint, centerPoint, radius) {
+			this.type = "Circle";
+			this.base(startPoint, color, boldness, endPoint);
+			this.radius = radius;
 		},
 		radius: 0,
 		centerPoint: 0,
+
 		setRadius: function setRadius() {
 			this.radius = Math.max(
 				Math.abs(this.endPoint.x - this.startPoint.x),
@@ -320,15 +422,17 @@ $( document ).ready(function() {
 	});
 
 	var Pencil = Base.extend( {
-		constructor: function(startPoint, color, boldness) {
+		constructor: function(startPoint, color, boldness, drawingArr) {
+			this.type = "Pencil";
 			this.startPoint = startPoint;
 			this.endPoint = startPoint;
 			this.lastChosenPoint = startPoint;
 			this.color = color;
 			this.boldness = boldness;
-			this.drawingArr = [startPoint];
-			this.topLeftMost = startPoint;
-			this.bottomRightMost = startPoint;
+			this.drawingArr = (typeof drawingArr === 'undefined') ? [startPoint] : drawingArr;
+			this.setHeightAndWidth();
+			//this.topLeftMost = startPoint;
+			//this.bottomRightMost = startPoint;
 		},
 		startPoint: 0,
 		endPoint: 0,
@@ -336,7 +440,11 @@ $( document ).ready(function() {
 		color: "#000000",
 		boldness: 0,
 		drawingArr: [],
+
 		addToDrawingArr: function addToDrawingArr(point) {
+			//The purpos of this was to "set a rectangle" so we could
+			//move the line by clicking in the rectangle surrounding the line
+			//Async problem..
 			this.drawingArr.push(point);
 			// setTimeout(function () {
 			    
@@ -355,18 +463,15 @@ $( document ).ready(function() {
 			// }
 			this.endPoint = point;
 		},
-
-		topLeftMost: 0,
-		bottomRightMost: 0,
+		//topLeftMost: 0,
+		//bottomRightMost: 0,
 		setHeightAndWidth: function setHeightAndWidth() {
 			this.rWidth = this.endPoint.x - this.startPoint.x;
 			this.rHeight = this.endPoint.y - this.startPoint.y;
 		},
-
 		initLastChosenPoint: function initLastChosenPoint (point) {
 			this.lastChosenPoint = point;
 		},
-
 		isAtPoint: function(point) {
     		if((this.startPoint.x < point.x && point.x < this.endPoint.x) || (this.startPoint.x > point.x && point.x > this.endPoint.x)) {
 	    		if((this.startPoint.y < point.y && point. y < this.endPoint.y) || (this.startPoint.y > point.y && point.y > this.endPoint.y)) {
@@ -375,11 +480,9 @@ $( document ).ready(function() {
     		}
     		return false;
 		},
-
 		setEndPoint: function(endPoint) {
 			this.endPoint = endPoint;
 		}, 
-
 		move: function move(toPoint) {
 			var xDiff = toPoint.x - this.lastChosenPoint.x;
 			var yDiff = toPoint.y - this.lastChosenPoint.y;
@@ -391,7 +494,6 @@ $( document ).ready(function() {
 			}
 
 		},
-
 		draw: function draw() {
 			context.strokeStyle = this.color;
 			context.lineWidth = this.boldness;
@@ -402,12 +504,12 @@ $( document ).ready(function() {
 				context.lineTo(this.drawingArr[i].x,this.drawingArr[i].y);
 			}
 			context.stroke();
-			//context.closePath();
 		}
 	});
 
 	var Text = Base.extend( {
 		constructor: function(startPoint, color, text, font, fontsize) {
+			this.type = "Text";
 			this.startPoint = startPoint;
 			this.endPoint = startPoint;
 			this.lastChosenPoint = startPoint;
@@ -417,8 +519,10 @@ $( document ).ready(function() {
 			this.font = font;
 			this.fontSize = fontsize;
 			this.widthOfText = 0;
+			this.setEndPoint();
 			this.draw();
 		},
+		type: "Text",
 		startPoint: 0,
 		endPoint: 0,
 		lastChosenPoint: 0,
@@ -428,6 +532,7 @@ $( document ).ready(function() {
 		font: "",
 		fontSize: "",
 		widthOfText: 0,
+
 		initLastChosenPoint: function initLastChosenPoint (point) {
 			this.lastChosenPoint = point;
 		},
@@ -441,7 +546,6 @@ $( document ).ready(function() {
 			this.lastChosenPoint = toPoint;
 		},
 		setEndPoint: function() {
-			var yD = 50;
 			var xD = parseInt(this.widthOfText);
 			var newEndPoint = {x: this.startPoint.x + xD, y: this.startPoint.y + 30};
 			this.endPoint = newEndPoint;
@@ -455,11 +559,11 @@ $( document ).ready(function() {
     		return false;
 		},
 		draw: function draw() {
-			context.strokeStyle = this.color;
+			context.fillStyle = this.color;
 			context.font = this.fontSize + this.font;
 			context.lineWidth = 1;
 			this.widthOfText = context.measureText(this.string).width;
 			context.fillText(this.string, this.startPoint.x, this.startPoint.y + 15);
    		}
-	})
+	});
 });

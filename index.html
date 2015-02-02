@@ -10,7 +10,6 @@
 	<title>Draw</title>
 </head>
 <body class="totalBody">
-	<header></header>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-9" id="canvasParent">
@@ -101,15 +100,28 @@
 		  				</label>
         			</div>
         		</div>
-
-				
+        		<div class="col-md-3" id="rightAlign">
+        			<div class="form-group">
+ 						<label for="usr">User name:</label>
+  						<input type="text" class="form-control" id="usr">
+					</div>
+					<div class="form-group">
+  						<label for="pwd">File name:</label>
+  						<input type="text" class="form-control" id="fileName">
+  						<input class="btn btn-default" type="submit" value="Save" id="saveBtn">
+					</div>
+					<div class="form-group">
+  						<label for="pwd">User name:</label>
+  						<input type="text" class="form-control" id="userName">
+  						<input class="btn btn-default" type="submit" value="Load" id="loadBtn">
+					</div>
+					<div class="btn-group-vertical col-md-12" id="saves"></div>
+        		</div>		
 			</div>
 		</div>
 
 
 </body>
-
-
   	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
   	<script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
